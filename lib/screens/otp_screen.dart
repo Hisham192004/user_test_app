@@ -3,39 +3,27 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 
-class OtpScreen extends StatefulWidget {
+class OtpScreen extends StatelessWidget {
   final String phoneNumber;
 
-  const OtpScreen({
+  OtpScreen({
     super.key,
     required this.phoneNumber,
   });
 
-  @override
-  State<OtpScreen> createState() => _OtpScreenState();
-}
-
-class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController otpController = TextEditingController();
   final FocusNode otpFocusNode = FocusNode();
 
-  @override
-  void dispose() {
-    otpController.dispose();
-    otpFocusNode.dispose();
-    super.dispose();
-  }
+  final ValueNotifier<String> otpNotifier = ValueNotifier('');
 
   void resetOtp() {
     otpController.clear();
+    otpNotifier.value = '';
     otpFocusNode.requestFocus();
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final String otp = otpController.text;
-
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
@@ -72,40 +60,45 @@ class _OtpScreenState extends State<OtpScreen> {
                   const SizedBox(height: 8),
 
                   Text(
-                    "Enter the verification code we just sent to your\nnumber +91 ******${widget.phoneNumber.substring(6)}",
+                    "Enter the verification code we just sent to your\nnumber +91 ******${phoneNumber.substring(6)}",
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 20),
-
                   GestureDetector(
                     onTap: () => otpFocusNode.requestFocus(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, (index) {
-                        return Container(
-                          width: 45,
-                          height: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 6),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: index == otp.length
-                                  ? Colors.black
-                                  : Colors.grey,
-                            ),
-                          ),
-                          child: Text(
-                            index < otp.length ? otp[index] : '',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                    child: ValueListenableBuilder<String>(
+                      valueListenable: otpNotifier,
+                      builder: (context, otp, _) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(6, (index) {
+                            return Container(
+                              width: 45,
+                              height: 50,
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: index == otp.length
+                                      ? Colors.black
+                                      : Colors.grey,
+                                ),
+                              ),
+                              child: Text(
+                                index < otp.length ? otp[index] : '',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }),
                         );
-                      }),
+                      },
                     ),
                   ),
                   Opacity(
@@ -120,7 +113,9 @@ class _OtpScreenState extends State<OtpScreen> {
                         border: InputBorder.none,
                         counterText: '',
                       ),
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (value) {
+                        otpNotifier.value = value;
+                      },
                     ),
                   ),
 
@@ -158,6 +153,8 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ),
                       onPressed: () {
+                        final otp = otpNotifier.value;
+
                         final bool isValidOtp =
                             context.read<AuthProvider>().verifyOtp(otp);
 

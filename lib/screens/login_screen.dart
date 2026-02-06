@@ -2,19 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:user_test_app/screens/otp_screen.dart';
-import '../providers/auth_provider.dart';
-import 'home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginScreen extends StatelessWidget {
+  LoginScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
-  String? errorText;
+  final ValueNotifier<String?> errorNotifier = ValueNotifier<String?>(null);
 
   bool isValidPhone(String phone) {
     if (phone.length != 10) return false;
@@ -26,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -34,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
+
               Center(
                 child: Image.asset(
                   'assets/login.jpg',
@@ -43,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 30),
+
               const Text(
                 'Enter Phone Number',
                 style: TextStyle(
@@ -52,34 +46,38 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 12),
-              TextField(
-                controller: phoneController,
-                keyboardType: TextInputType.number,
-                maxLength: 10,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: InputDecoration(
-                  hintText: 'Enter Phone Number *',
-                  counterText: '',
-                  errorText: errorText,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    errorText = null;
-                  });
+              ValueListenableBuilder<String?>(
+                valueListenable: errorNotifier,
+                builder: (context, errorText, _) {
+                  return TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 10,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'Enter Phone Number *',
+                      counterText: '',
+                      errorText: errorText,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (_) {
+                      errorNotifier.value = null;
+                    },
+                  );
                 },
               ),
 
               const SizedBox(height: 6),
+
               RichText(
                 text: const TextSpan(
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                   children: [
-                    TextSpan(text: 'By continuing, I agree to Company'),
+                    TextSpan(text: 'By continuing, I agree to Company '),
                     TextSpan(
                       text: 'Terms and condition',
                       style: TextStyle(color: Colors.blue),
@@ -92,7 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 30),
+
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -107,23 +107,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     final phone = phoneController.text.trim();
 
                     if (!isValidPhone(phone)) {
-                      setState(() {
-                        errorText =
-                            'Enter a valid 10-digit number starting with 6,7,8,9';
-                      });
+                      errorNotifier.value =
+                          'Enter a valid 10-digit number starting with 6,7,8,9';
                       return;
                     }
 
-
                     Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => OtpScreen(
-      phoneNumber: phoneController.text,
-    ),
-  ),
-);
-
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OtpScreen(phoneNumber: phone),
+                      ),
+                    );
                   },
                   child: const Text('Get OTP'),
                 ),

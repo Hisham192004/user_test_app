@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (_) => const AddUserScreen(),
+            builder: (_) => AddUserScreen(),
           );
         },
         child: const Icon(Icons.add, color: Colors.white),
